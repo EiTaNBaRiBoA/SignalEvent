@@ -11,19 +11,20 @@ static func safe_connect_signal(signalRef : Signal, callable : Callable,defaultA
 					printerr("More Argument passed than the method can contain")
 					return
 				var default_args_callable : Callable = func(dynamicArgs : Variant = null): _create_func(defaultArgs,dynamicArgs,callable,signalRef,debugEmit)
-				cache_array.append(CachingSignals.new(default_args_callable,signalRef,callable.get_method()))
+				cache_array.append(CachingSignals.new(default_args_callable,signalRef,str(callable)))
 				signalRef.connect(default_args_callable,connectFlags)
 			else:
-				cache_array.append(CachingSignals.new(callable,signalRef,callable.get_method()))
+				cache_array.append(CachingSignals.new(callable,signalRef,str(callable)))
 				signalRef.connect(callable,connectFlags)
 
 
 ## Disconnecting a callable from a specific signal
 static func safe_disconnect_callable(signalRef : Signal, callable : Callable) -> void:
 	for cache : CachingSignals in cache_array.duplicate(true): # Duplicating to avoid modification during foreach
-		if cache.callable_origibal_name == callable.get_method():
-			signalRef.disconnect(cache.callable)
-			cache_array.erase(cache)
+		if cache.callable_origibal_name == str(callable) && \
+			cache.signalRef == signalRef:
+				signalRef.disconnect(cache.callable)
+				cache_array.erase(cache)
 
 ## Disconnecting all callables from a specific signal
 static func safe_disconnect_all_callables(signalRef : Signal) -> void:
@@ -36,7 +37,7 @@ static func safe_disconnect_all_callables(signalRef : Signal) -> void:
 ## Disconnecting all signals from a specific callable
 static func safe_disconnect_all_signals(callable : Callable) -> void:
 	for cache : CachingSignals in cache_array.duplicate(true): # Duplicating to avoid modification during foreach
-		if callable.get_method() == cache.callable_origibal_name: # looking at what this callable connected
+		if str(callable) == cache.callable_origibal_name: # looking at what this callable connected
 			cache.signalRef.disconnect(cache.callable)
 			cache_array.erase(cache)
 #endregion
