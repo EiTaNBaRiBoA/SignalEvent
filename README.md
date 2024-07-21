@@ -13,7 +13,6 @@ SignalEvent is a Godot plugin designed to streamline and secure your signal conn
 
 1. Download the `SignalEvent.gd` file from this repository.
 2. Place the file in your Godot project's `addons/` directory.
-3. Activate the plugin in the Project Settings > Plugins tab.
 
 ### Usage
 
@@ -42,6 +41,10 @@ func _ready():
 	
 	# Simple connection to a func with optional parameter
 	SignalEvent.safe_connect_signal(no_param_signal, func_optional)
+	no_param_signal.emit(5)
+	# Disconnecting all signals that are connect to a specific func
+	SignalEvent.safe_disconnect_all_signals(func_optional)
+	# Would not Emit
 	no_param_signal.emit(5)
 
 func func_arguments(a : int, b : int, c : String) -> void:
