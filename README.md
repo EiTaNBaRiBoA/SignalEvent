@@ -20,35 +20,36 @@ SignalEvent is a Godot plugin designed to streamline and secure your signal conn
 ```gdscript
 extends Control
 
-signal testDictionary
-signal testVars
-signal testSignalParam
+signal argument_signal
+signal funcs_signal
+signal no_param_signal
 
 func _ready():
 	# Connecting with default argument and debug emission
-	SignalEvent.safe_connect_signal(testDictionary, TestFunc, [1], true) 
-	testDictionary.emit([2, "Hello"])
+	SignalEvent.safe_connect_signal(argument_signal, func_arguments, [1], true) 
+	argument_signal.emit([2, "Hello"])
 
-	# Disconnecting a specific callable
-	SignalEvent.safe_disconnect_callable(testDictionary, TestFunc)
+	# Disconnecting a callable from a specific signal
+	SignalEvent.safe_disconnect_callable(argument_signal, func_arguments)
 
+
+	# Connecting with multiple default funcs
+	SignalEvent.safe_connect_signal(funcs_signal, func_arguments, [1, 2,"Hello"])
+	SignalEvent.safe_connect_signal(funcs_signal,func_optional)
+	funcs_signal.emit()
 	# Disconnecting all callables from a signal
-	SignalEvent.safe_disconnect_all_callables(testDictionary)
+	SignalEvent.safe_disconnect_all_callables(funcs_signal)
+	
+	# Simple connection to a func with optional parameter
+	SignalEvent.safe_connect_signal(no_param_signal, func_optional)
+	no_param_signal.emit(5)
 
-	# Connecting with multiple default arguments
-	SignalEvent.safe_connect_signal(testVars, TestFunc, [1, 2])
-	testVars.emit("Hello")
-
-	# Simple connection
-	SignalEvent.safe_connect_signal(testSignalParam, TestFunc2)
-	testSignalParam.emit(1)
-
-func TestFunc(aArgument : int, b : int, c : String) -> void:
-	print(aArgument)
+func func_arguments(a : int, b : int, c : String) -> void:
+	print(a)
 	print(b)
 	print(c)
 
-func TestFunc2(a : int) -> void:
+func func_optional(a : int = 1) -> void:
 	print(a)
 ```
 
