@@ -53,8 +53,12 @@ static func _isConnected(signalRef: Signal, callable: Callable) -> bool:
 static func _create_func(defaultArgs: Array, dynamicArgs: Variant, callable: Callable, signalRef: Signal, debugEmit: bool=false) -> void:
 	var all_args = _extractArgs(defaultArgs)
 	all_args += _extractArgs(dynamicArgs)
-	var scriptName: String = signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
-	if all_args.size() != callable.get_argument_count():
+	var scriptName: String =""
+	if signalRef.get_object().get_script() == null:
+		scriptName = signalRef.get_object().get_class()
+	else:
+		scriptName = signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
+	if  not _validateAmountArgs(callable,all_args):
 		printerr("too little or too many arguments passed from signal '%s' from %s %s" % [signalRef.get_name(), scriptName, _getCorrectCallStack(scriptName)])
 		return
 	if not _validateArgs(callable, all_args):
@@ -70,6 +74,18 @@ static func _extractArgs(args: Variant) -> Array:
 		return []
 	else:
 		return [args]
+
+static func _validateAmountArgs(callable: Callable, all_args: Array) -> bool:
+	var defaultArgs :int = 0 
+	for method: Dictionary in callable.get_object().get_method_list():
+		if method.name == callable.get_method():
+			defaultArgs = method.default_args.size()
+			break;
+	
+	if all_args.size() == callable.get_argument_count():
+		return true
+	else:
+		return all_args.size() == callable.get_argument_count() - defaultArgs
 
 static func _validateArgs(callable: Callable, all_args: Array) -> bool:
 	for method: Dictionary in callable.get_object().get_method_list():
