@@ -90,9 +90,9 @@ static func _validateAmountArgs(callable: Callable, all_args: Array) -> bool:
 static func _validateArgs(callable: Callable, all_args: Array) -> bool:
 	for method: Dictionary in callable.get_object().get_method_list():
 		if method.name == callable.get_method():
-			for i in method.args.size():
+			for j in all_args.size():
 				var verificationType: bool = false # Defaults to false, so if nothing is valid it will return false
-				for j in all_args.size():
+				for i in method.args.size():
 					if typeof(all_args[j]) == method.args[i].type&&i == j: # # Comparing if they are the same index
 						verificationType = true
 				if not verificationType: return false # if all didn't match
