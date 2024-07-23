@@ -96,6 +96,7 @@ static func _extractArgs(args: Variant) -> Array:
 		return [args]
 static func _get_scriptName(signalRef : Signal) -> String:
 	if signalRef.get_object().get_script() == null:
+		var obj = signalRef.get_object()
 		return signalRef.get_object().get_class()
 	else:
 		return signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
@@ -128,6 +129,9 @@ static func _validateArgs(callable: Callable, all_args: Array) -> bool:
 static func _getCorrectCallStack(scriptName: String) -> String:
 	for i in get_stack().size():
 		if get_stack()[i].source.get_file() == scriptName:
+			return "from function: %s() in line %s" % [get_stack()[i].function, get_stack()[i].line]
+	for i in get_stack().size():
+		if get_stack()[i].source.get_file() != "SignalEvent.gd":
 			return "from function: %s() in line %s" % [get_stack()[i].function, get_stack()[i].line]
 	return ""
 
