@@ -6,16 +6,26 @@ static var cache_array: Array[CachingSignals] = []
 ## Connect a signal method to a signal, defaultArgs are optional for passing args everytime you call emit this signal \n debugEmit is for easier debugging when tracing who emitted the signal
 static func safe_connect_signal(signalRef: Signal, callable: Callable, defaultArgs: Variant=[], debugEmit: bool=false, connectFlags: int=0) -> void:
 		if not _isConnected(signalRef, callable):
-			if defaultArgs.size() > 0:
-				if defaultArgs.size() > callable.get_argument_count():
-					printerr("More Argument passed than the method can contain")
-					return
-				var default_args_callable: Callable = func(dynamicArgs: Variant=null): _create_func(defaultArgs, dynamicArgs, callable, signalRef, debugEmit)
-				cache_array.append(CachingSignals.new(default_args_callable, signalRef, str(callable)))
-				signalRef.connect(default_args_callable, connectFlags)
-			else:
-				cache_array.append(CachingSignals.new(callable, signalRef, str(callable)))
-				signalRef.connect(callable, connectFlags)
+			if defaultArgs.size() > callable.get_argument_count():
+				printerr("More Argument passed than the method can contain")
+				return
+			var default_args_callable: Callable = func(dynamicArgs: Variant=null): _create_func(defaultArgs, dynamicArgs, callable, signalRef, debugEmit)
+			cache_array.append(CachingSignals.new(default_args_callable, signalRef, str(callable)))
+			signalRef.connect(default_args_callable, connectFlags)
+
+## Connecting each callable to correlated signal
+static func safe_connect_symmetrically(signalsRef : Array[Signal], callables : Array[Callable],\
+			defaultArgs : Variant = [], debugEmit: bool=false, connectFlags: int=0) -> void:
+	if(signalsRef.size()!=callables.size()):
+		if signalsRef.size()>0:
+			printerr("The number of signals are not matching the number of callables %s" % [_getCorrectCallStack(_get_scriptName(signalsRef[0]))])
+		else: 
+			printerr("The number of signals are not matching the number of callables ")
+		return
+	for i in signalsRef.size():
+		safe_connect_signal(signalsRef[i],callables[i],defaultArgs,debugEmit,connectFlags)
+
+
 
 ## Disconnecting a callable from a specific signal
 static func safe_disconnect_callable(signalRef: Signal, callable: Callable) -> void:
@@ -38,6 +48,20 @@ static func safe_disconnect_all_signals(callable: Callable) -> void:
 		if str(callable) == cache.callable_origibal_name: # looking at what this callable connected
 			cache.signalRef.disconnect(cache.callable)
 			cache_array.erase(cache)
+
+
+## Connecting each callable to correlated signal
+static func safe_disconnect_symmetrically(signalsRef : Array[Signal], callables : Array[Callable]) -> void:
+	if(signalsRef.size()!=callables.size()):
+		if signalsRef.size()>0:
+			printerr("The number of signals are not matching the number of callables %s" % [_getCorrectCallStack(_get_scriptName(signalsRef[0]))])
+		else: 
+			printerr("The number of signals are not matching the number of callables ")
+		return
+	for i in signalsRef.size():
+		safe_disconnect_callable(signalsRef[i],callables[i])
+
+
 #endregion
 
 #region private methods
@@ -46,18 +70,14 @@ static func _isConnected(signalRef: Signal, callable: Callable) -> bool:
 	for cache: CachingSignals in cache_array.duplicate(true): # Duplicating to avoid modification during foreach
 		if cache.callable_origibal_name == str(callable)&& \
 			cache.signalRef == signalRef:
-				printerr("The signal %s is already connected %s" % [signalRef.get_name(), _getCorrectCallStack(signalRef.get_object().get_script().get_path().get_file())])
+				printerr("The signal %s is already connected %s" % [signalRef.get_name(), _getCorrectCallStack(_get_scriptName(signalRef))])
 				return true
 	return false
 
 static func _create_func(defaultArgs: Array, dynamicArgs: Variant, callable: Callable, signalRef: Signal, debugEmit: bool=false) -> void:
 	var all_args = _extractArgs(defaultArgs)
 	all_args += _extractArgs(dynamicArgs)
-	var scriptName: String =""
-	if signalRef.get_object().get_script() == null:
-		scriptName = signalRef.get_object().get_class()
-	else:
-		scriptName = signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
+	var scriptName: String = _get_scriptName(signalRef)
 	if  not _validateAmountArgs(callable,all_args):
 		printerr("too little or too many arguments passed from signal '%s' from %s %s" % [signalRef.get_name(), scriptName, _getCorrectCallStack(scriptName)])
 		return
@@ -74,6 +94,13 @@ static func _extractArgs(args: Variant) -> Array:
 		return []
 	else:
 		return [args]
+static func _get_scriptName(signalRef : Signal) -> String:
+	if signalRef.get_object().get_script() == null:
+		return signalRef.get_object().get_class()
+	else:
+		return signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
+
+
 
 static func _validateAmountArgs(callable: Callable, all_args: Array) -> bool:
 	var defaultArgs :int = 0 
