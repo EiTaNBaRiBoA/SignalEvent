@@ -82,7 +82,7 @@ static func _create_func(defaultArgs: Array, dynamicArgs: Variant, callable: Cal
 		printerr("too little or too many arguments passed from signal '%s' from %s %s" % [signalRef.get_name(), scriptName, _getCorrectCallStack(scriptName)])
 		return
 	if not _validateArgs(callable, all_args):
-		printerr("Arguments passed to the signal '%s' are not valid" % signalRef.get_name())
+		printerr("Arguments passed to the signal '%s' are not valid %s" % [signalRef.get_name(),_getCorrectCallStack(_get_scriptName(signalRef))])
 		return
 	if debugEmit: print("Signal '%s' %s" % [signalRef.get_name(), _getCorrectCallStack(scriptName)])
 	callable.callv(all_args) # to extract params and call method
