@@ -96,7 +96,6 @@ static func _extractArgs(args: Variant) -> Array:
 		return [args]
 static func _get_scriptName(signalRef : Signal) -> String:
 	if signalRef.get_object().get_script() == null:
-		var obj = signalRef.get_object()
 		return signalRef.get_object().get_class()
 	else:
 		return signalRef.get_object().get_script().get_path().get_file() # # get_script() returns node , get_path() returns NodePath,  get_file() returns script name
