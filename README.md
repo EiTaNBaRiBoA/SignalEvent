@@ -50,8 +50,8 @@ func _ready():
 	no_param_signal.emit(5) 
 	
 	# Symmetrically connect signals and callables 
-	var signals_to_connect = [argument_signal, funcs_signal]
-	var callables_to_connect = [func_arguments, func_optional]
+	var signals_to_connect : Array[Signal] = [argument_signal, funcs_signal]
+	var callables_to_connect : Array[Callable] = [func_arguments, func_optional]
 	SignalEvent.safe_connect_symmetrically(signals_to_connect, callables_to_connect)
 
 	# Emit the signals (now connected symmetrically)
